@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0fmapreduce.proto\x12\tmapreduce\"2\n\nJobRequest\x12\x10\n\x08job_name\x18\x01 \x01(\t\x12\x12\n\ninput_file\x18\x02 \x01(\t\"?\n\x0bJobResponse\x12\x0f\n\x07message\x18\x01 \x01(\t\x12\x0f\n\x07success\x18\x02 \x01(\x08\x12\x0e\n\x06job_id\x18\x03 \x01(\t2G\n\tMapReduce\x12:\n\tSubmitJob\x12\x15.mapreduce.JobRequest\x1a\x16.mapreduce.JobResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0fmapreduce.proto\x12\tmapreduce\"2\n\nJobRequest\x12\x10\n\x08job_name\x18\x01 \x01(\t\x12\x12\n\ninput_file\x18\x02 \x01(\t\"?\n\x0bJobResponse\x12\x0f\n\x07message\x18\x01 \x01(\t\x12\x0f\n\x07success\x18\x02 \x01(\x08\x12\x0e\n\x06job_id\x18\x03 \x01(\t\"6\n\x0eMapTaskRequest\x12\x0f\n\x07task_id\x18\x01 \x01(\x05\x12\x13\n\x0binput_chunk\x18\x02 \x01(\t\"A\n\x11ReduceTaskRequest\x12\x0f\n\x07task_id\x18\x01 \x01(\x05\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\x0e\n\x06values\x18\x03 \x03(\x05\"@\n\tMapResult\x12\x0f\n\x07task_id\x18\x01 \x01(\x05\x12\"\n\x05pairs\x18\x02 \x03(\x0b\x32\x13.mapreduce.KeyValue\"<\n\x0cReduceResult\x12\x0f\n\x07task_id\x18\x01 \x01(\x05\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\x0e\n\x06result\x18\x03 \x01(\x05\"&\n\x08KeyValue\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05\"\'\n\x03\x41\x63k\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\"\x07\n\x05\x45mpty2\xc1\x02\n\tMapReduce\x12:\n\tSubmitJob\x12\x15.mapreduce.JobRequest\x1a\x16.mapreduce.JobResponse\x12<\n\rAssignMapTask\x12\x10.mapreduce.Empty\x1a\x19.mapreduce.MapTaskRequest\x12\x42\n\x10\x41ssignReduceTask\x12\x10.mapreduce.Empty\x1a\x1c.mapreduce.ReduceTaskRequest\x12\x37\n\x0fReportMapResult\x12\x14.mapreduce.MapResult\x1a\x0e.mapreduce.Ack\x12=\n\x12ReportReduceResult\x12\x17.mapreduce.ReduceResult\x1a\x0e.mapreduce.Ackb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -35,6 +35,20 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_JOBREQUEST']._serialized_end=80
   _globals['_JOBRESPONSE']._serialized_start=82
   _globals['_JOBRESPONSE']._serialized_end=145
-  _globals['_MAPREDUCE']._serialized_start=147
-  _globals['_MAPREDUCE']._serialized_end=218
+  _globals['_MAPTASKREQUEST']._serialized_start=147
+  _globals['_MAPTASKREQUEST']._serialized_end=201
+  _globals['_REDUCETASKREQUEST']._serialized_start=203
+  _globals['_REDUCETASKREQUEST']._serialized_end=268
+  _globals['_MAPRESULT']._serialized_start=270
+  _globals['_MAPRESULT']._serialized_end=334
+  _globals['_REDUCERESULT']._serialized_start=336
+  _globals['_REDUCERESULT']._serialized_end=396
+  _globals['_KEYVALUE']._serialized_start=398
+  _globals['_KEYVALUE']._serialized_end=436
+  _globals['_ACK']._serialized_start=438
+  _globals['_ACK']._serialized_end=477
+  _globals['_EMPTY']._serialized_start=479
+  _globals['_EMPTY']._serialized_end=486
+  _globals['_MAPREDUCE']._serialized_start=489
+  _globals['_MAPREDUCE']._serialized_end=810
 # @@protoc_insertion_point(module_scope)

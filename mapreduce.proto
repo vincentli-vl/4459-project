@@ -2,9 +2,22 @@ syntax = "proto3";
 
 package mapreduce;
 
-// Initial functions for the client --> master call
+// All the functions we will make use of
 service MapReduce {
+    // Client → Master
     rpc SubmitJob(JobRequest) returns (JobResponse);
+
+    // Worker → Master
+    // The worker is asking the master: “Do you have any map work for me?”
+    // The master replies with the task.
+    rpc AssignMapTask(Empty) returns (MapTaskRequest);
+
+    rpc AssignReduceTask(Empty) returns (ReduceTaskRequest);
+
+    // The worker sends the result to the master.
+    rpc ReportMapResult(MapResult) returns (Ack);
+
+    rpc ReportReduceResult(ReduceResult) returns (Ack);
 }
 
 // job_name is for the type of job if we add more in the future
@@ -22,3 +35,41 @@ message JobResponse {
     bool success = 2;
     string job_id = 3;
 }
+
+// task_id: A unique ID for this map task to keep track.
+// input_chunk: A string of text (e.g., a few lines) from the input file.
+message MapTaskRequest {
+    int32 task_id = 1;
+    string input_chunk = 2;
+}
+
+message ReduceTaskRequest {
+  int32 task_id = 1;
+  string key = 2;
+  repeated int32 values = 3;
+}
+
+// KeyValue pairs is the list of key-value pairs generated from the map task
+message MapResult {
+    int32 task_id = 1;
+    repeated KeyValue pairs = 2;
+}
+
+message ReduceResult {
+  int32 task_id = 1;
+  string key = 2;
+  int32 result = 3;
+}
+
+message KeyValue {
+    string key = 1;
+    int32 value = 2;
+}
+
+// The master sends it to confirm whether it successfully received and processed a result from the worker.
+message Ack {
+    bool success = 1;
+    string message = 2;
+}
+
+message Empty {} // used for polling map task (no request data needed)
