@@ -5,7 +5,7 @@ import warnings
 
 import mapreduce_pb2 as mapreduce__pb2
 
-GRPC_GENERATED_VERSION = '1.70.0'
+GRPC_GENERATED_VERSION = '1.71.0'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 
@@ -40,25 +40,10 @@ class MapReduceStub(object):
                 request_serializer=mapreduce__pb2.JobRequest.SerializeToString,
                 response_deserializer=mapreduce__pb2.JobResponse.FromString,
                 _registered_method=True)
-        self.AssignMapTask = channel.unary_unary(
-                '/mapreduce.MapReduce/AssignMapTask',
-                request_serializer=mapreduce__pb2.Empty.SerializeToString,
-                response_deserializer=mapreduce__pb2.MapTaskRequest.FromString,
-                _registered_method=True)
-        self.AssignReduceTask = channel.unary_unary(
-                '/mapreduce.MapReduce/AssignReduceTask',
-                request_serializer=mapreduce__pb2.Empty.SerializeToString,
-                response_deserializer=mapreduce__pb2.ReduceTaskRequest.FromString,
-                _registered_method=True)
-        self.ReportMapResult = channel.unary_unary(
-                '/mapreduce.MapReduce/ReportMapResult',
-                request_serializer=mapreduce__pb2.MapResult.SerializeToString,
-                response_deserializer=mapreduce__pb2.Ack.FromString,
-                _registered_method=True)
-        self.ReportReduceResult = channel.unary_unary(
-                '/mapreduce.MapReduce/ReportReduceResult',
-                request_serializer=mapreduce__pb2.ReduceResult.SerializeToString,
-                response_deserializer=mapreduce__pb2.Ack.FromString,
+        self.SendHeartbeat = channel.unary_unary(
+                '/mapreduce.MapReduce/SendHeartbeat',
+                request_serializer=mapreduce__pb2.HeartbeatRequest.SerializeToString,
+                response_deserializer=mapreduce__pb2.HeartbeatResponse.FromString,
                 _registered_method=True)
 
 
@@ -101,6 +86,12 @@ class MapReduceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def SendHeartbeat(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_MapReduceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -109,25 +100,11 @@ def add_MapReduceServicer_to_server(servicer, server):
                     request_deserializer=mapreduce__pb2.JobRequest.FromString,
                     response_serializer=mapreduce__pb2.JobResponse.SerializeToString,
             ),
-            'AssignMapTask': grpc.unary_unary_rpc_method_handler(
-                    servicer.AssignMapTask,
-                    request_deserializer=mapreduce__pb2.Empty.FromString,
-                    response_serializer=mapreduce__pb2.MapTaskRequest.SerializeToString,
-            ),
-            'AssignReduceTask': grpc.unary_unary_rpc_method_handler(
-                    servicer.AssignReduceTask,
-                    request_deserializer=mapreduce__pb2.Empty.FromString,
-                    response_serializer=mapreduce__pb2.ReduceTaskRequest.SerializeToString,
-            ),
-            'ReportMapResult': grpc.unary_unary_rpc_method_handler(
-                    servicer.ReportMapResult,
-                    request_deserializer=mapreduce__pb2.MapResult.FromString,
-                    response_serializer=mapreduce__pb2.Ack.SerializeToString,
-            ),
-            'ReportReduceResult': grpc.unary_unary_rpc_method_handler(
-                    servicer.ReportReduceResult,
-                    request_deserializer=mapreduce__pb2.ReduceResult.FromString,
-                    response_serializer=mapreduce__pb2.Ack.SerializeToString,
+
+            'SendHeartbeat': grpc.unary_unary_rpc_method_handler(
+                    servicer.SendHeartbeat,
+                    request_deserializer=mapreduce__pb2.HeartbeatRequest.FromString,
+                    response_serializer=mapreduce__pb2.HeartbeatResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -169,6 +146,100 @@ class MapReduce(object):
             _registered_method=True)
 
     @staticmethod
+
+    def SendHeartbeat(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+
+            '/mapreduce.MapReduce/SendHeartbeat',
+            mapreduce__pb2.HeartbeatRequest.SerializeToString,
+            mapreduce__pb2.HeartbeatResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+
+
+class WorkerStub(object):
+    """Worker service for handling map/reduce tasks
+    """
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.AssignMapTask = channel.unary_unary(
+                '/mapreduce.Worker/AssignMapTask',
+                request_serializer=mapreduce__pb2.MapTask.SerializeToString,
+                response_deserializer=mapreduce__pb2.TaskResponse.FromString,
+                _registered_method=True)
+        self.AssignReduceTask = channel.unary_unary(
+                '/mapreduce.Worker/AssignReduceTask',
+                request_serializer=mapreduce__pb2.ReduceTask.SerializeToString,
+                response_deserializer=mapreduce__pb2.TaskResponse.FromString,
+                _registered_method=True)
+
+
+class WorkerServicer(object):
+    """Worker service for handling map/reduce tasks
+    """
+
+    def AssignMapTask(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def AssignReduceTask(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_WorkerServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'AssignMapTask': grpc.unary_unary_rpc_method_handler(
+                    servicer.AssignMapTask,
+                    request_deserializer=mapreduce__pb2.MapTask.FromString,
+                    response_serializer=mapreduce__pb2.TaskResponse.SerializeToString,
+            ),
+            'AssignReduceTask': grpc.unary_unary_rpc_method_handler(
+                    servicer.AssignReduceTask,
+                    request_deserializer=mapreduce__pb2.ReduceTask.FromString,
+                    response_serializer=mapreduce__pb2.TaskResponse.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'mapreduce.Worker', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('mapreduce.Worker', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class Worker(object):
+    """Worker service for handling map/reduce tasks
+    """
+
+    @staticmethod
     def AssignMapTask(request,
             target,
             options=(),
@@ -182,9 +253,10 @@ class MapReduce(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/mapreduce.MapReduce/AssignMapTask',
-            mapreduce__pb2.Empty.SerializeToString,
-            mapreduce__pb2.MapTaskRequest.FromString,
+
+            '/mapreduce.Worker/AssignMapTask',
+            mapreduce__pb2.MapTask.SerializeToString,
+            mapreduce__pb2.TaskResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -196,6 +268,7 @@ class MapReduce(object):
             _registered_method=True)
 
     @staticmethod
+
     def AssignReduceTask(request,
             target,
             options=(),
@@ -209,63 +282,9 @@ class MapReduce(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/mapreduce.MapReduce/AssignReduceTask',
-            mapreduce__pb2.Empty.SerializeToString,
-            mapreduce__pb2.ReduceTaskRequest.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def ReportMapResult(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/mapreduce.MapReduce/ReportMapResult',
-            mapreduce__pb2.MapResult.SerializeToString,
-            mapreduce__pb2.Ack.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def ReportReduceResult(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/mapreduce.MapReduce/ReportReduceResult',
-            mapreduce__pb2.ReduceResult.SerializeToString,
-            mapreduce__pb2.Ack.FromString,
+            '/mapreduce.Worker/AssignReduceTask',
+            mapreduce__pb2.ReduceTask.SerializeToString,
+            mapreduce__pb2.TaskResponse.FromString,
             options,
             channel_credentials,
             insecure,
