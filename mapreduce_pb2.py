@@ -24,6 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
+
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0fmapreduce.proto\x12\tmapreduce\"2\n\nJobRequest\x12\x10\n\x08job_name\x18\x01 \x01(\t\x12\x12\n\ninput_file\x18\x02 \x01(\t\"?\n\x0bJobResponse\x12\x0f\n\x07message\x18\x01 \x01(\t\x12\x0f\n\x07success\x18\x02 \x01(\x08\x12\x0e\n\x06job_id\x18\x03 \x01(\t\"\\\n\x10HeartbeatRequest\x12\x11\n\tworker_id\x18\x01 \x01(\t\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x14\n\x0c\x63urrent_task\x18\x03 \x01(\t\x12\x0f\n\x07\x61\x64\x64ress\x18\x04 \x01(\t\":\n\x11HeartbeatResponse\x12\x14\n\x0c\x61\x63knowledged\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\"G\n\x07MapTask\x12\x0f\n\x07task_id\x18\x01 \x01(\t\x12\x12\n\ndata_chunk\x18\x02 \x01(\t\x12\x17\n\x0foutput_location\x18\x03 \x01(\t\"d\n\nReduceTask\x12\x0f\n\x07task_id\x18\x01 \x01(\t\x12,\n\x0bmapped_data\x18\x02 \x03(\x0b\x32\x17.mapreduce.KeyValuePair\x12\x17\n\x0foutput_location\x18\x03 \x01(\t\"j\n\x0cTaskResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07task_id\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t\x12\'\n\x06result\x18\x04 \x03(\x0b\x32\x17.mapreduce.KeyValuePair\"*\n\x0cKeyValuePair\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05\x32\x93\x01\n\tMapReduce\x12:\n\tSubmitJob\x12\x15.mapreduce.JobRequest\x1a\x16.mapreduce.JobResponse\x12J\n\rSendHeartbeat\x12\x1b.mapreduce.HeartbeatRequest\x1a\x1c.mapreduce.HeartbeatResponse2\x8a\x01\n\x06Worker\x12<\n\rAssignMapTask\x12\x12.mapreduce.MapTask\x1a\x17.mapreduce.TaskResponse\x12\x42\n\x10\x41ssignReduceTask\x12\x15.mapreduce.ReduceTask\x1a\x17.mapreduce.TaskResponseb\x06proto3')
 
 _globals = globals()
@@ -35,6 +36,7 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_JOBREQUEST']._serialized_end=80
   _globals['_JOBRESPONSE']._serialized_start=82
   _globals['_JOBRESPONSE']._serialized_end=145
+
   _globals['_HEARTBEATREQUEST']._serialized_start=147
   _globals['_HEARTBEATREQUEST']._serialized_end=239
   _globals['_HEARTBEATRESPONSE']._serialized_start=241

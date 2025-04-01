@@ -2,8 +2,9 @@ syntax = "proto3";
 
 package mapreduce;
 
-// Initial functions for the client --> master call
+// All the functions we will make use of
 service MapReduce {
+    // Client → Master
     rpc SubmitJob(JobRequest) returns (JobResponse);
     rpc SendHeartbeat(HeartbeatRequest) returns (HeartbeatResponse);
 }
