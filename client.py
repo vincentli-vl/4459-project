@@ -1,5 +1,6 @@
 import grpc, sys
-import mapreduce_pb2, mapreduce_pb2_grpc
+import mapreduce_pb2
+import mapreduce_pb2_grpc
 
 def run():
     # Check if the user entered the corrent number of arguments

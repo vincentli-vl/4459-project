@@ -1,6 +1,8 @@
+import random
+import os
+
 def create_test_file(filename, size_mb=1):
     """Create a test file with random text data"""
-    import random
     
     words = ["apple", "banana", "orange", "grape", "mango", 
              "python", "java", "golang", "rust", "javascript",
@@ -12,7 +14,10 @@ def create_test_file(filename, size_mb=1):
     words_per_line = 10
     lines_needed = (size_mb * chars_per_mb) // (words_per_line * 7)
     
-    with open(filename, 'w') as f:
+    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    full_path = os.path.join(root_dir, filename)
+    
+    with open(full_path, 'w') as f:
         for _ in range(lines_needed):
             line = ' '.join(random.choices(words, k=words_per_line))
             f.write(line + '\n')

@@ -1,13 +1,13 @@
 import grpc
 import time
 import threading
-import mapreduce_pb2
-import mapreduce_pb2_grpc
 import logging
 from concurrent import futures
 import subprocess
 import sys
 import os
+import mapreduce_pb2
+import mapreduce_pb2_grpc
 
 logging.basicConfig(level=logging.INFO)
 

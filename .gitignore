@@ -1,7 +1,20 @@
-Run_Results/
+# Python cache
 __pycache__/
 *.py[cod]
+
+# VSCode
 .vscode/
-.env
+*.code-workspace
+
+# Env
+.venv/
+env/
+*.env
+
+# Output & logs
+Run_Results/
 *.log
-*.tmp
+
+# gRPC generated
+generated/
+mapreduce_pb2*.py
