@@ -221,17 +221,26 @@ class MapReduceMaster(mapreduce_pb2_grpc.MapReduceServicer):
             grouped_data = defaultdict(list)
             for pair in map_results:
                 grouped_data[pair.key].append(pair)
-
+            
+            logging.info(f"Grouped {len(map_results)} map results into {len(grouped_data)} keys")
+            
             # Create reduce tasks
             success = True
             for key, values in grouped_data.items():
                 task_id = f"{job_id}_reduce_{key}"
                 assigned = False
+                attempts = 0
+                max_attempts = 3
                 
-                while not assigned:
-                    available_workers = [w for w in self.workers.values() if w.status == "IDLE"]
+                while not assigned and attempts < max_attempts:
+                    available_workers = [w for w in self.workers.values() 
+                                       if w.status == "IDLE" and 
+                                       time.time() - w.last_heartbeat < 10]
+                    
                     if not available_workers:
-                        time.sleep(1)
+                        logging.warning(f"No available workers for reduce task {task_id}")
+                        time.sleep(2)
+                        attempts += 1
                         continue
 
                     worker = available_workers[0]
@@ -242,18 +251,26 @@ class MapReduceMaster(mapreduce_pb2_grpc.MapReduceServicer):
                             output_location=f"/tmp/mapreduce/{job_id}/reduce_{key}"
                         )
                         
-                        response = worker.get_stub().AssignReduceTask(task)
+                        logging.info(f"Assigning reduce task for key '{key}' with {len(values)} values to worker {worker.id}")
+                        stub = worker.get_stub()
+                        response = stub.AssignReduceTask(task)
+                        
                         if response.success:
+                            logging.info(f"Reduce task {task_id} completed successfully")
                             assigned = True
                         else:
                             logging.error(f"Reduce task {task_id} failed: {response.message}")
-                            success = False
-                            break
+                            attempts += 1
                             
                     except Exception as e:
                         logging.error(f"Error assigning reduce task: {str(e)}")
-                        success = False
-                        break
+                        attempts += 1
+                        time.sleep(1)
+                
+                if not assigned:
+                    logging.error(f"Failed to assign reduce task for key {key} after {max_attempts} attempts")
+                    success = False
+                    break
 
             return success
 

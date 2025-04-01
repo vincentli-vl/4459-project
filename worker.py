@@ -167,11 +167,17 @@ class WorkerServicer(mapreduce_pb2_grpc.WorkerServicer):
         try:
             # Group and sum values by key
             reduced_data = {}
+            count = 0
+            
+            # Process all mapped data
             for kvp in request.mapped_data:
+                count += 1
                 if kvp.key in reduced_data:
                     reduced_data[kvp.key] += kvp.value
                 else:
                     reduced_data[kvp.key] = kvp.value
+            
+            logging.info(f"Processed {count} key-value pairs in reduce task")
             
             # Convert reduced data back to KeyValuePairs
             result = []
@@ -181,6 +187,7 @@ class WorkerServicer(mapreduce_pb2_grpc.WorkerServicer):
                     value=value
                 )
                 result.append(kvp)
+                logging.info(f"Reduced result for key '{key}': {value}")
             
             # Ensure output directory exists
             os.makedirs(os.path.dirname(request.output_location), exist_ok=True)
@@ -190,10 +197,12 @@ class WorkerServicer(mapreduce_pb2_grpc.WorkerServicer):
                 for kvp in result:
                     f.write(f"{kvp.key}\t{kvp.value}\n")
             
+            logging.info(f"Wrote {len(result)} results to {request.output_location}")
+            
             return mapreduce_pb2.TaskResponse(
                 success=True,
                 task_id=request.task_id,
-                message="Reduce task completed successfully",
+                message=f"Reduce task completed successfully. Processed {count} pairs",
                 result=result
             )
             
