@@ -1,1 +1,7 @@
-Run_Results
+Run_Results/
+*.pyc
+__pycache__/ 
+.vscode/
+.env
+*.log
+*.tmp
