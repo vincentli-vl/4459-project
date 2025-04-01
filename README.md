@@ -5,7 +5,7 @@ The purpose of this project is to implement MapReduce, a distributed computing p
 
 ### Option 1: using the client
 1. Run `python test_mapreduce.py`
-2. Verify results by running `python verify_results <job_id>`
+2. Verify results by running `python verify_results <job_id>` (it is also included in the test_mapreduce.py)
 
 ### Option 2: manually testing
 1. Make sure the test_input.txt file exists, if not, run `python create_test_file.py` to create a text file of words
