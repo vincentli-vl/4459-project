@@ -80,6 +80,10 @@ def run_test():
                 logging.info("Job completed. Checking results...")
             else:
                 logging.error("Output directory not found")
+                
+            verify_cmd = [sys.executable, "verify_results.py", response.job_id]
+            logging.info(f"Running verification script: {' '.join(verify_cmd)}")
+            subprocess.run(verify_cmd)
         else:
             logging.error("Failed to submit job")
             

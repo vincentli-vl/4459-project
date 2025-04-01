@@ -2,6 +2,7 @@ import grpc
 import uuid
 import time
 import threading
+import random
 from concurrent import futures
 import mapreduce_pb2
 import mapreduce_pb2_grpc
@@ -9,6 +10,7 @@ import logging
 from collections import defaultdict
 from typing import Dict, List, Set
 import os
+from tqdm import tqdm
 
 # Configure logging
 logging.basicConfig(
@@ -34,6 +36,7 @@ class MapReduceMaster(mapreduce_pb2_grpc.MapReduceServicer):
         self.workers: Dict[str, Worker] = {}
         self.active_jobs: Dict[str, dict] = {}
         self.completed_jobs: Set[str] = set()
+        self.progress_bars: Dict[str, tqdm] = {}
         
         # Start worker monitoring thread
         self.monitor_thread = threading.Thread(target=self._monitor_workers)
@@ -106,8 +109,11 @@ class MapReduceMaster(mapreduce_pb2_grpc.MapReduceServicer):
     def _process_job(self, job_id: str):
         """Process a MapReduce job"""
         try:
+            start_time = time.time()
             job = self.active_jobs[job_id]
             job['status'] = 'MAPPING'
+            
+            os.makedirs(f"./Run_Results/{job_id}", exist_ok=True)
 
             # Read and split input file
             chunks = self._split_input_file(job['input_file'])
@@ -129,6 +135,8 @@ class MapReduceMaster(mapreduce_pb2_grpc.MapReduceServicer):
             # Job completed successfully
             job['status'] = 'COMPLETED'
             self.completed_jobs.add(job_id)
+            elapsed = time.time() - start_time
+            logging.info(f"Job {job_id} completed successfully in {elapsed:.2f} seconds")
             del self.active_jobs[job_id]
 
         except Exception as e:
@@ -158,88 +166,100 @@ class MapReduceMaster(mapreduce_pb2_grpc.MapReduceServicer):
         return chunks
 
     def _assign_map_tasks(self, job_id: str, chunks: List[str]) -> List[mapreduce_pb2.KeyValuePair]:
-        """Assign map tasks to available workers"""
+        """Assign map tasks in parallel to available workers"""
         all_results = []
-        
-        logging.info(f"Starting map tasks for job {job_id} with {len(chunks)} chunks")
-        logging.info(f"Available workers: {len(self.workers)}")
-        
-        for i, chunk in enumerate(chunks):
+        result_lock = threading.Lock()
+
+        def assign_chunk(i, chunk):
             task_id = f"{job_id}_map_{i}"
             assigned = False
             attempts = 0
             max_attempts = 3
-            
+
             while not assigned and attempts < max_attempts:
-                # Find available workers
-                available_workers = [w for w in self.workers.values() 
-                                   if w.status == "IDLE" and 
-                                   time.time() - w.last_heartbeat < 10]  # Only consider recently active workers
-                
-                logging.info(f"Found {len(available_workers)} available workers")
-                
+                available_workers = [w for w in self.workers.values()
+                                    if w.status == "IDLE" and time.time() - w.last_heartbeat < 10]
+                random.shuffle(available_workers)
+
                 if not available_workers:
-                    logging.warning("No available workers, waiting...")
-                    time.sleep(2)
+                    logging.warning(f"No available workers for map task {task_id}, retrying...")
+                    time.sleep(1)
                     attempts += 1
                     continue
 
                 worker = available_workers[0]
-                logging.info(f"Assigning task {task_id} to worker {worker.id}")
-                
                 try:
                     task = mapreduce_pb2.MapTask(
                         task_id=task_id,
                         data_chunk=chunk,
-                        output_location=f"/tmp/mapreduce/{job_id}/map_{i}"
+                        output_location=f"./Run_Results/{job_id}/map_{i}"
                     )
-                    
-                    # Get a fresh stub for the request
                     stub = worker.get_stub()
                     response = stub.AssignMapTask(task)
-                    
+
                     if response.success:
-                        logging.info(f"Map task {task_id} completed successfully with {len(response.result)} results")
-                        all_results.extend(response.result)
+                        logging.info(f"Map task {task_id} completed with {len(response.result)} results")
+                        with result_lock:
+                            all_results.extend(response.result)
+                        self.progress_bars[job_id].update(1)
                         assigned = True
                     else:
                         logging.error(f"Map task {task_id} failed: {response.message}")
                         attempts += 1
-                        
                 except Exception as e:
-                    logging.error(f"Error assigning map task to worker: {str(e)}")
+                    logging.error(f"Error assigning map task {task_id}: {e}")
                     attempts += 1
                     time.sleep(1)
-        
+
+        self.progress_bars[job_id] = tqdm(total=len(chunks), desc=f"Mapping [{job_id[:8]}]", position=0)
+
+        # Launch all map task threads
+        threads = []
+        for i, chunk in enumerate(chunks):
+            t = threading.Thread(target=assign_chunk, args=(i, chunk))
+            threads.append(t)
+            t.start()
+
+        for t in threads:
+            t.join()
+            
+        self.progress_bars[job_id].close()
+        del self.progress_bars[job_id]
+
         logging.info(f"All map tasks completed. Total results: {len(all_results)}")
         return all_results
 
     def _assign_reduce_tasks(self, job_id: str, map_results: List[mapreduce_pb2.KeyValuePair]) -> bool:
-        """Assign reduce tasks to available workers"""
+        """Assign reduce tasks in parallel to available workers and aggregate results"""
         try:
-            # Group mapped data by key
             grouped_data = defaultdict(list)
             for pair in map_results:
                 grouped_data[pair.key].append(pair)
-            
+
             logging.info(f"Grouped {len(map_results)} map results into {len(grouped_data)} keys")
-            
-            # Create reduce tasks
+            self.progress_bars[job_id] = tqdm(total=len(grouped_data), desc=f"Reducing [{job_id[:8]}]", position=0)
+
             success = True
-            for key, values in grouped_data.items():
+            failure_flag = threading.Event()
+            threads = []
+
+            def assign_reduce_task(key, values):
+                if failure_flag.is_set():
+                    return
+
                 task_id = f"{job_id}_reduce_{key}"
-                assigned = False
                 attempts = 0
                 max_attempts = 3
-                
-                while not assigned and attempts < max_attempts:
-                    available_workers = [w for w in self.workers.values() 
-                                       if w.status == "IDLE" and 
-                                       time.time() - w.last_heartbeat < 10]
-                    
+                assigned = False
+
+                while not assigned and attempts < max_attempts and not failure_flag.is_set():
+                    available_workers = [w for w in self.workers.values()
+                                        if w.status == "IDLE" and time.time() - w.last_heartbeat < 10]
+                    random.shuffle(available_workers)
+
                     if not available_workers:
-                        logging.warning(f"No available workers for reduce task {task_id}")
-                        time.sleep(2)
+                        logging.warning(f"No available workers for reduce task {task_id}, retrying...")
+                        time.sleep(1)
                         attempts += 1
                         continue
 
@@ -248,35 +268,64 @@ class MapReduceMaster(mapreduce_pb2_grpc.MapReduceServicer):
                         task = mapreduce_pb2.ReduceTask(
                             task_id=task_id,
                             mapped_data=values,
-                            output_location=f"/tmp/mapreduce/{job_id}/reduce_{key}"
+                            output_location=f"./Run_Results/{job_id}/reduce_{key}"
                         )
-                        
-                        logging.info(f"Assigning reduce task for key '{key}' with {len(values)} values to worker {worker.id}")
                         stub = worker.get_stub()
                         response = stub.AssignReduceTask(task)
-                        
+
                         if response.success:
                             logging.info(f"Reduce task {task_id} completed successfully")
                             assigned = True
+                            self.progress_bars[job_id].update(1)
                         else:
                             logging.error(f"Reduce task {task_id} failed: {response.message}")
                             attempts += 1
-                            
                     except Exception as e:
-                        logging.error(f"Error assigning reduce task: {str(e)}")
+                        logging.error(f"Error assigning reduce task {task_id}: {e}")
                         attempts += 1
                         time.sleep(1)
-                
-                if not assigned:
-                    logging.error(f"Failed to assign reduce task for key {key} after {max_attempts} attempts")
-                    success = False
-                    break
 
-            return success
+                if not assigned:
+                    logging.error(f"Failed to assign reduce task {task_id} after {max_attempts} attempts")
+                    failure_flag.set()
+
+            # Launch all reduce task threads
+            for key, values in grouped_data.items():
+                t = threading.Thread(target=assign_reduce_task, args=(key, values))
+                threads.append(t)
+                t.start()
+
+            for t in threads:
+                t.join()
+
+            self.progress_bars[job_id].close()
+            del self.progress_bars[job_id]
+
+            if failure_flag.is_set():
+                return False
+
+            # Result aggregation
+            output_dir = f"./Run_Results/{job_id}"
+            final_path = os.path.join(output_dir, "final_output.txt")
+
+            with open(final_path, 'w') as outfile:
+                results = []
+                for file in os.listdir(output_dir):
+                    if file.startswith("reduce_"):
+                        with open(os.path.join(output_dir, file), 'r') as f:
+                            results.extend(f.readlines())
+
+                results.sort()  # Optional: sort by key
+                outfile.writelines(results)
+
+            logging.info(f"Aggregated results written to {final_path}")
+            return True
 
         except Exception as e:
-            logging.error(f"Error in reduce phase: {str(e)}")
+            logging.error(f"Error in reduce phase: {e}")
             return False
+
+
 
     def _monitor_workers(self):
         """Monitor worker health through heartbeats"""
@@ -301,6 +350,8 @@ class MapReduceMaster(mapreduce_pb2_grpc.MapReduceServicer):
         self.workers[worker_id] = worker
         logging.info(f"Registered new worker {worker_id} at {address}")
         return worker
+    
+
 
 def serve(port):
     """Start the master server"""

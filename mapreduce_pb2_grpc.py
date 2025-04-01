@@ -5,7 +5,7 @@ import warnings
 
 import mapreduce_pb2 as mapreduce__pb2
 
-GRPC_GENERATED_VERSION = '1.71.0'
+GRPC_GENERATED_VERSION = '1.70.0'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 
@@ -58,34 +58,6 @@ class MapReduceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def AssignMapTask(self, request, context):
-        """Worker → Master
-        The worker is asking the master: “Do you have any map work for me?”
-        The master replies with the task.
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def AssignReduceTask(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def ReportMapResult(self, request, context):
-        """The worker sends the result to the master.
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def ReportReduceResult(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
     def SendHeartbeat(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -100,7 +72,6 @@ def add_MapReduceServicer_to_server(servicer, server):
                     request_deserializer=mapreduce__pb2.JobRequest.FromString,
                     response_serializer=mapreduce__pb2.JobResponse.SerializeToString,
             ),
-
             'SendHeartbeat': grpc.unary_unary_rpc_method_handler(
                     servicer.SendHeartbeat,
                     request_deserializer=mapreduce__pb2.HeartbeatRequest.FromString,
@@ -146,7 +117,6 @@ class MapReduce(object):
             _registered_method=True)
 
     @staticmethod
-
     def SendHeartbeat(request,
             target,
             options=(),
@@ -160,7 +130,6 @@ class MapReduce(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-
             '/mapreduce.MapReduce/SendHeartbeat',
             mapreduce__pb2.HeartbeatRequest.SerializeToString,
             mapreduce__pb2.HeartbeatResponse.FromString,
@@ -173,7 +142,6 @@ class MapReduce(object):
             timeout,
             metadata,
             _registered_method=True)
-
 
 
 class WorkerStub(object):
@@ -253,7 +221,6 @@ class Worker(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-
             '/mapreduce.Worker/AssignMapTask',
             mapreduce__pb2.MapTask.SerializeToString,
             mapreduce__pb2.TaskResponse.FromString,
@@ -268,7 +235,6 @@ class Worker(object):
             _registered_method=True)
 
     @staticmethod
-
     def AssignReduceTask(request,
             target,
             options=(),

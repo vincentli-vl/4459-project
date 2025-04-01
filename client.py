@@ -6,7 +6,7 @@ def run():
     if len(sys.argv) != 3:
         print("In order to run this file: python client.py <job_name> <input_file>")
         return
-
+    
     # Use the arguments and declare the request variables
     job_name = sys.argv[1]
     input_file = sys.argv[2]
