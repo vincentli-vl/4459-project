@@ -1,4 +1,5 @@
 # 4459-project
+The purpose of this project is to implement MapReduce, a distributed computing paradigm, to efficiently process large datasets across multiple nodes. Given the open-ended nature of the project, this approach will align with distributed systems principles and provide a scalable solution for data-intensive applications. 
 
 ## How to run
 
