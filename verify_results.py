@@ -9,8 +9,8 @@ logging.basicConfig(
 )
 
 def verify_results(job_id):
-    """Verify the results of a MapReduce job"""
-    output_dir = f"/tmp/mapreduce/{job_id}"
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    output_dir = os.path.join(base_dir, "run_results", job_id)
     
     # Check if output directory exists
     if not os.path.exists(output_dir):
