@@ -2,9 +2,17 @@ syntax = "proto3";
 
 package mapreduce;
 
-// Initial functions for the client --> master call
+// All the functions we will make use of
 service MapReduce {
+    // Client → Master
     rpc SubmitJob(JobRequest) returns (JobResponse);
+    rpc SendHeartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+}
+
+// Worker service for handling map/reduce tasks
+service Worker {
+    rpc AssignMapTask(MapTask) returns (TaskResponse);
+    rpc AssignReduceTask(ReduceTask) returns (TaskResponse);
 }
 
 // job_name is for the type of job if we add more in the future
@@ -21,4 +29,41 @@ message JobResponse {
     string message = 1;
     bool success = 2;
     string job_id = 3;
+}
+
+// New messages for worker functionality
+message HeartbeatRequest {
+    string worker_id = 1;
+    string status = 2;
+    string current_task = 3;
+    string address = 4;
+}
+
+message HeartbeatResponse {
+    bool acknowledged = 1;
+    string message = 2;
+}
+
+message MapTask {
+    string task_id = 1;
+    string data_chunk = 2;
+    string output_location = 3;
+}
+
+message ReduceTask {
+    string task_id = 1;
+    repeated KeyValuePair mapped_data = 2;
+    string output_location = 3;
+}
+
+message TaskResponse {
+    bool success = 1;
+    string task_id = 2;
+    string message = 3;
+    repeated KeyValuePair result = 4;
+}
+
+message KeyValuePair {
+    string key = 1;
+    int32 value = 2;
 }

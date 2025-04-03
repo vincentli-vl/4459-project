@@ -1,12 +1,13 @@
 import grpc, sys
-import mapreduce_pb2, mapreduce_pb2_grpc
+import mapreduce_pb2
+import mapreduce_pb2_grpc
 
 def run():
     # Check if the user entered the corrent number of arguments
     if len(sys.argv) != 3:
         print("In order to run this file: python client.py <job_name> <input_file>")
         return
-
+    
     # Use the arguments and declare the request variables
     job_name = sys.argv[1]
     input_file = sys.argv[2]
@@ -25,15 +26,15 @@ def run():
         response = stub.SubmitJob(request)
         
         if response.success:
-            print(f"Client: Job {job_name} submitted successfully!")
-            print(f"Client: Message: {response.message}")
-            print(f"Client: Job ID: {response.job_id}")
+            print(f"[Client]: Job {job_name} submitted successfully!")
+            print(f"[Client]: Message: {response.message}")
+            print(f"[Client]: Job ID: {response.job_id}")
         else:
-            print(f"Client: Job {job_name} failed to submit!")
-            print(f"Client: Message: {response.message}")
+            print(f"[Client]: Job {job_name} failed to submit!")
+            print(f"[Client]: Message: {response.message}")
             
     except grpc.RpcError as e:
-        print(f"Client: Error occurred: {e}")
+        print(f"[Client]: Error occurred: {e}")
         
 if __name__ == '__main__':
     run()
